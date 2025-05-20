@@ -1,4 +1,4 @@
-import { defineStore } from 'pinia';
+import { defineStore } from "pinia";
 
 interface User {
   id: number | null;
@@ -14,14 +14,14 @@ interface CartItem {
   quantity: number;
 }
 
-export const useUserStore = defineStore('user', {
+export const useUserStore = defineStore("user", {
   state: (): { user: User; cart: CartItem[] } => ({
     user: {
       id: null,
-      name: '',
-      mail: '',
-      profileType: '',
-      token: '',
+      name: "",
+      mail: "",
+      profileType: "",
+      token: "",
       tokenCreatedAt: null,
     },
     cart: [],
@@ -36,19 +36,22 @@ export const useUserStore = defineStore('user', {
   },
 
   actions: {
-    setUser(userData: Omit<User, 'tokenCreatedAt'> & { token: string }) {
+    setUser(userData: Omit<User, "tokenCreatedAt"> & { token: string }) {
       this.user = {
         ...userData,
         tokenCreatedAt: new Date().toISOString(),
       };
     },
+    userToString(): string {
+      return JSON.stringify(this.user);
+    },
     logout() {
       this.user = {
         id: null,
-        name: '',
-        mail: '',
-        profileType: '',
-        token: '',
+        name: "",
+        mail: "",
+        profileType: "",
+        token: "",
         tokenCreatedAt: null,
       };
       this.cart = [];

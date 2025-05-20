@@ -63,11 +63,40 @@
 </template>
 
 <script setup lang="ts">
-const email: string = "";
-const password: string = "";
+import { ref } from "vue";
+import axios from "axios";
+import { useUserStore } from "../../store/userStore";
+
+const email = ref("");
+const password = ref("");
+
+const userStore = useUserStore();
 
 const handleSubmit = () => {
-  console.log("Email:", email);
-  console.log("Password:", password);
+  const url: string = import.meta.env.VITE_APP_API_URL + "users/login";
+  const data = {
+    email: email.value,
+    password: password.value,
+  };
+  axios
+    .post(url, data)
+    .then((response) => {
+      if (response.status === 200) {
+        const userData = response.data;
+        userStore.setUser({
+          id: userData.id,
+          name: userData.name,
+          mail: userData.mail,
+          profileType: userData.profileType,
+          token: response.data.token,
+        });
+        console.log(userStore.userToString());
+      } else {
+        console.error("Erreur lors de la connexion :", response.data.message);
+        alert(
+          "Erreur lors de la connexion. Veuillez vérifier vos identifiants."
+        );
+      }
+    })
 };
 </script>
