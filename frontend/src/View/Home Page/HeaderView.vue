@@ -30,7 +30,7 @@
     </div>
 
     <div class="w-10 h-10 flex items-center justify-center">
-      <RouterLink to="/Utilisateur/Connexion">
+      <RouterLink :to="route">
         <i
           class="fas fa-user text-xl cursor-pointer hover:text-gray-300 transition-colors duration-150"
         ></i
@@ -40,7 +40,25 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { onMounted, ref } from "vue";
+import { useUserStore } from "../../store/userStore";
 
 const isFocused = ref(false);
+const route = ref("");
+const userStore = useUserStore();
+
+onMounted(()=>{
+  if (userStore.isAuthenticated) {
+    if (userStore.isVendeur) {
+      route.value = "/Vendeur/Profil/";
+    } else if (userStore.isUtilisateur) {
+      route.value = "/Utilisateur/Profil/";
+    }else{
+      route.value = "/Admin/Proil/";
+    }
+    route.value += userStore.getUserId;
+  } else {
+    route.value = "/Utilisateur/Connexion";
+  }
+})
 </script>

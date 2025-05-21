@@ -66,11 +66,13 @@
 import { ref } from "vue";
 import axios from "axios";
 import { useUserStore } from "../../store/userStore";
+import { useRouter } from "vue-router";
 
 const email = ref("");
 const password = ref("");
 
 const userStore = useUserStore();
+const router = useRouter();
 
 const handleSubmit = () => {
   const url: string = import.meta.env.VITE_APP_API_URL + "users/login";
@@ -90,7 +92,7 @@ const handleSubmit = () => {
           profileType: userData.profileType,
           token: response.data.token,
         });
-        console.log(userStore.userToString());
+        router.push({ name: "Home" });
       } else {
         console.error("Erreur lors de la connexion :", response.data.message);
         alert(

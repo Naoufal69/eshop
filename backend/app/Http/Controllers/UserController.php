@@ -17,8 +17,9 @@ class UserController extends Controller
         //
     }
 
-    public function login(Request $request) {
-        try{
+    public function login(Request $request)
+    {
+        try {
             $request->validate([
                 'email' => 'required|string|email|max:255',
                 'password' => 'required|string|min:8',
@@ -31,7 +32,7 @@ class UserController extends Controller
             ], 422);
         }
 
-        
+
 
         if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
             $user = Auth::user();
@@ -64,6 +65,7 @@ class UserController extends Controller
         return response()->json([
             'status' => 'success',
             'message' => 'Login successful',
+            'id' => $user->id,
             'name' => $user->name,
             'mail' => $user->email,
             'tokenCreatedAt' => date('Y-m-d H:i:s'),
@@ -155,7 +157,19 @@ class UserController extends Controller
      */
     public function show(string $id)
     {
-        //
+        $user = User::find($id);
+        if (!$user) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'User not found',
+            ], 404);
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'user' => $user,
+            'profile_picture' => asset('images/' . $user->profile_picture),
+        ], 200);
     }
 
     /**
@@ -163,7 +177,101 @@ class UserController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+
+        // Vérification de l'authentification
+        try {
+            $request->validate([
+                'verifyEmail' => 'required|string|email|max:255',
+                'email' => 'required|string|email|max:255|unique:users,email,' . $id,
+                'name' => 'string|max:255',
+                'phone' => 'string|max:15',
+                'birthDate' => 'date',
+                'photo' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
+                'password' => 'required|string|min:8',
+
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Validation failed',
+                'errors' => env('APP_ENV') === 'local' ? $e->validator->errors() : 'Invalid input',
+            ], 422);
+        }
+
+        // Vérification des identifiants de l'utilisateur
+        $user = User::find($id);
+        if (!$user) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'User not found',
+            ], 404);
+        }
+
+        // Vérification de l'email
+        if ($user->email !== $request->verifyEmail) {
+            return response()->json([
+                'status' => 'error',
+                'message' => env('APP_ENV') === 'local' ? 'Invalid email' : 'Invalid credentials',
+            ], 401);
+        }
+        if (!Hash::check($request->password, $user->password)) {
+            return response()->json([
+                'status' => 'error',
+                'message' =>  env('APP_ENV') === 'local' ? 'Invalid password' : 'Invalid credentials',
+            ], 401);
+        }
+
+        if ($request->has('email')) {
+            $user->email = $request->email;
+        }
+        if ($request->has('name')) {
+            $user->name = $request->name;
+        }
+        if ($request->has('phone')) {
+            $user->phone = $request->phone;
+        }
+        if ($request->has('birthDate')) {
+            $birthdate = explode('-',$request->birthDate);
+            $age = date('Y') - $birthdate[0];
+        if ($age < 18) {
+            $message = "L'utilisateur doit avoir au moins 18 ans";
+            return response()->json([
+                'status' => 'error',
+                'message' => env('APP_ENV') === 'local' ? $message . ' - age : '. $age. ' - birth : ' . $birthdate[0] : $message,
+            ], 422);
+        }
+            $user->birthdate = $request->birthDate;
+        }
+
+        if ($request->hasFile('photo')) {
+            $file = $request->file('photo');
+            $filename = time() . '.' . $file->getClientOriginalExtension();
+            try {
+                $file->move(public_path('images'), $filename);
+            } catch (\Exception $e) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Failed to upload profile picture',
+                    'error' => env('APP_ENV') === 'local' ? $e->getMessage() : 'An error occurred',
+                ], 500);
+            }
+            $user->profile_picture = $filename;
+        }
+
+        try {
+            $user->save();
+            return response()->json([
+                'status' => 'success',
+                'message' => 'User updated successfully',
+                'user' => $user,
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to update user',
+                'error' => env('APP_ENV') === 'local' ? $e->getMessage() : 'An error occurred',
+            ], 500);
+        }
     }
 
     /**

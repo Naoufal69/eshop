@@ -33,6 +33,30 @@ export const useUserStore = defineStore("user", {
     isAuthenticated: (state): boolean => {
       return !!state.user.token;
     },
+    isUtilisateur: (state): boolean => {
+      return state.user.profileType === "user";
+    },
+    isAdmin: (state): boolean => {
+      return state.user.profileType === "admin";
+    },
+    isVendeur: (state): boolean => {
+      return state.user.profileType === "seller";
+    },
+    getUserId(state): number | null {
+      return state.user.id;
+    },
+    getProfileType(state): string {
+      return state.user.profileType;
+    },
+    getToken(state): string {
+      return state.user.token;
+    },
+    getUserEmail(state): string {
+      return state.user.mail;
+    },
+    getUserName(state): string {
+      return state.user.name;
+    },
   },
 
   actions: {
