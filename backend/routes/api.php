@@ -14,6 +14,7 @@ Route::middleware([CorsMiddleware::class]) // Applique le middleware CORS
             Route::middleware('auth:sanctum')->group(function () {
                 Route::get('/profile/{id}', [UserController::class, 'show'])->name('user.profiles');
                 Route::post('/profile/{id}', [UserController::class, 'update'])->name('user.update');
+                Route::post('/profile/{id}/password', [UserController::class, 'passwordUpdate'])->name('user.update.password');
             });
         });
 });

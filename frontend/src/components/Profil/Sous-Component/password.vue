@@ -57,22 +57,40 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
+import { useUserStore } from "../../../store/userStore";
+import axios from 'axios';
+import router from '../../../router';
+const userStore = useUserStore();
 
 const currentPassword = ref('');
 const newPassword = ref('');
 const confirmPassword = ref('');
+const urlUpdateProfile = import.meta.env.VITE_URL_UPDATE_PROFILE + userStore.getUserId + '/password';
 
 const handlePasswordUpdate = async () => {
-  if (newPassword.value !== confirmPassword.value) {
-    alert("Les mots de passe ne correspondent pas.");
-    return;
-  }
+  // if (newPassword.value !== confirmPassword.value) {
+  //   alert("Les mots de passe ne correspondent pas.");
+  //   return;
+  // }
 
-  console.log('Mise à jour du mot de passe avec :', {
-    current: currentPassword.value,
-    new: newPassword.value,
-    confirm: confirmPassword.value,
-  });
+  const data = {
+    currentPassword: currentPassword.value,
+    newPassword: newPassword.value,
+    confirmPassword: confirmPassword.value
+  };
+  console.log(import.meta.env.VITE_APP_API_URL + userStore.getUserId + '/password');
+  userStore.toString();
+
+  // axios.post(urlUpdateProfile, data, {
+  //   headers: {
+  //     'Authorization': `Bearer ${userStore.getToken}`
+  //   }
+  // })
+  // .then(response => {
+  //   if (response.status === 200) {
+  //     router.push('/Utilisateur/Profil/'+userStore.getUserId);
+  //   }
+  // })
 
 };
 </script>

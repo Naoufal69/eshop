@@ -27,7 +27,6 @@
           v-model="email"
           type="email"
           id="email"
-          required
           class="border rounded w-full py-2 px-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
         />
       </div>
@@ -165,7 +164,7 @@ const handleUpdateProfile = async () => {
       userStore.setUser({
           id: response.data.user.id,
           name: response.data.user.name,
-          mail: response.data.user.mail,
+          mail: response.data.user.email,
           profileType: response.data.user.profileType,
           token: token,
         });

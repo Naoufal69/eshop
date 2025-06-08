@@ -66,8 +66,8 @@ export const useUserStore = defineStore("user", {
         tokenCreatedAt: new Date().toISOString(),
       };
     },
-    userToString(): string {
-      return JSON.stringify(this.user);
+    toString(): void {
+      console.log(`Nom : ${this.user.name}, Mail : ${this.user.mail}, ID : ${this.user.id}, Type de profil : ${this.user.profileType}`);
     },
     logout() {
       this.user = {

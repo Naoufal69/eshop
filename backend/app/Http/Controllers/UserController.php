@@ -172,6 +172,61 @@ class UserController extends Controller
         ], 200);
     }
 
+    public function passwordUpdate(Request $request, $id){
+        // Vérification de l'authentification
+        try {
+            $request->validate([
+                'verifyEmail' => 'required|string|email|max:255',
+                'password' => 'required|string|min:8',
+                'newPassword' => 'required|string|min:8|confirmed',
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Validation failed',
+                'errors' => env('APP_ENV') === 'local' ? $e->validator->errors() : 'Invalid input',
+            ], 422);
+        }
+
+        // Vérification des identifiants de l'utilisateur
+        $user = User::find($id);
+        if (!$user) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'User not found',
+            ], 404);
+        }
+
+        // Vérification de l'email
+        if ($user->email !== $request->verifyEmail) {
+            return response()->json([
+                'status' => 'error',
+                'message' => env('APP_ENV') === 'local' ? 'Invalid email' : 'Invalid credentials',
+            ], 401);
+        }
+        if (!Hash::check($request->password, $user->password)) {
+            return response()->json([
+                'status' => 'error',
+                'message' =>  env('APP_ENV') === 'local' ? 'Invalid password' : 'Invalid credentials',
+            ], 401);
+        }
+
+        // Mise à jour du mot de passe
+        try {
+            $user->password = Hash::make($request->newPassword);
+            $user->save();
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Password updated successfully',
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => env('APP_ENV') === 'local' ? $e->getMessage() : 'An error occurred while updating the password',
+            ], 500);
+        }
+    }
+
     /**
      * Update the specified resource in storage.
      */
@@ -182,7 +237,7 @@ class UserController extends Controller
         try {
             $request->validate([
                 'verifyEmail' => 'required|string|email|max:255',
-                'email' => 'required|string|email|max:255|unique:users,email,' . $id,
+                'email' => 'string|email|max:255|unique:users,email,' . $id,
                 'name' => 'string|max:255',
                 'phone' => 'string|max:15',
                 'birthDate' => 'date',
